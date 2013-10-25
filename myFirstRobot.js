@@ -16,35 +16,50 @@
  *  "Y8888P"   "Y88P"   "Y88888  "Y8888  888 "Y888888 888  888 888  888 
  * 
  */
- 
- Jx().$package(function(J){
-    var count = 0; // Keeps track of how long we've
-	// been searching for our target
-	var gunTurnAmt; // How much to turn our gun when searching
-	var trackName; // Name of the robot we're currently tracking
-	Robot = new J.Class({extend : tank.Robot},{
 
-		/**
+Jx().$package(function(J){
+    var isForward;
+
+    Robot = new J.Class({extend : tank.Robot},{
+
+		/*
 		*robot主函数
 		**/	
 		run:function(){
             this.setUI(tank.ui["green"]);
 			this.loop(function(){
-                this.say("转到你晕~~~~","orange");
-				this.setTurn(10000);
-				this.ahead(10000);
+				isForward=true;
+				this.ahead(100); // Move ahead 100
+				this.turnGunRight(360,function(){
+					isForward=false;
+				}); // Spin gun around
+				this.back(100); // Move back 100
+				this.turnGunRight(360); // Spin gun around
+                this.say("我走了千万里，才找到一个你！！","yellow");
 			});
 		},
 		onHitWall:function(e){
-			this.back(10);
-		},
-		onHitRobot:function(e){
-			if(e.getBearing()<10&&e.getBearing()>-10){
-				this.fire(3);
-			}
+            this.say("这该死的墙！","#ff1818");
+            if(isForward){
+            	this.back(40);
+            	isForward=false;
+            }
+            else{
+            	this.ahead(40);
+            	isForward=true;
+            }
+			
+			this.turnRight(90);
+            
 		},
 		onScannedRobot:function(e){
-			this.fire(3);
+            this.say("亲，来一发吧，看你往哪儿躲！");
+            this.fire(1);
+		},
+		onHitByBullet:function(e){
+			var a=e.getBearing();
+			this.turnLeft((90 + e.getBearing())%360);
+            this.say("哇，好痛！","red");
 		}
 
 	});

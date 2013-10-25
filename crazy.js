@@ -16,36 +16,63 @@
  *  "Y8888P"   "Y88P"   "Y88888  "Y8888  888 "Y888888 888  888 888  888 
  * 
  */
- 
- Jx().$package(function(J){
-    var count = 0; // Keeps track of how long we've
-	// been searching for our target
-	var gunTurnAmt; // How much to turn our gun when searching
-	var trackName; // Name of the robot we're currently tracking
-	Robot = new J.Class({extend : tank.Robot},{
 
+Jx().$package(function(J){
+    var isMoveForward;
+	var revertDirection=function(){
+		if(isMoveForward){
+			this.setAhead(-10000);
+			isMoveForward=false;
+		}
+		else{
+			this.setAhead(10000);
+			isMoveForward=true;
+
+		}
+	};
+	Robot = new J.Class({extend : tank.Robot},{
 		/**
 		*robot主函数
 		**/	
 		run:function(){
-            this.setUI(tank.ui["green"]);
+
+			this.setAhead(10000);
+			isMoveForward=true;
+
 			this.loop(function(){
-                this.say("转到你晕~~~~","orange");
-				this.setTurn(10000);
-				this.ahead(10000);
-			});
+                this.say("小样，能打到我么？","deepskyblue");
+				this.setTurn(60,function(){
+					this.setTurn(-120,function(){
+						this.setTurn(240,function(){
+							this.setTurn(-120);
+							this.execute();
+						});
+						this.execute();
+					});
+					this.execute();
+				});
+				this.execute();				
+
+			})
+
+
 		},
+		/**
+		*看到其他robot的处理程序
+		**/	
+		onScannedRobot:function(e){
+            this.say("打打打！","yellow");
+			this.fire(1);
+		},
+		/**
+		*和墙碰撞的处理程序
+		**/	
 		onHitWall:function(e){
-			this.back(10);
+			revertDirection.call(this);
 		},
 		onHitRobot:function(e){
-			if(e.getBearing()<10&&e.getBearing()>-10){
-				this.fire(3);
-			}
-		},
-		onScannedRobot:function(e){
-			this.fire(3);
+			revertDirection.call(this);
 		}
-
+	
 	});
 });
